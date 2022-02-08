@@ -1,19 +1,19 @@
 package main
 
 // Parent Server info and child info according to Parent
-type ZoneP struct {
+type Parent struct {
 	hostname string
 	ip       string
 	port     string
 	hmac     string
 	keyname  string
 	secret   string
-	child_ns map[string]*ZoneAuth
+	child_ns map[string]*Child
 	ds       []string
 }
 
 // Authoritave Nameserver
-type ZoneAuth struct {
+type Child struct {
 	hostname string
 	ip       string
 	port     string
