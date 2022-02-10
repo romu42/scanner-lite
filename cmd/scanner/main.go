@@ -69,47 +69,33 @@ func main() {
 	for zone, parent := range zones {
 		log.Printf("Zone %s\n", zone)
 		dsadd, dsremove := CreateUpdate(zone, parent)
-		log.Printf("add is type %T with value %v\n", dsadd, dsadd)
-		log.Printf("remove is type %T with value %v\n", dsremove, dsremove)
 		for _, value := range dsadd {
 			value.Hdr.Rrtype = 43
-			log.Printf("WATCHER::::: value is a %T with value of %v", &value.DS, value.Hdr.Rrtype)
 		}
+
 		adds := []dns.RR{}
 		for _, value := range dsadd {
 			adds = append(adds, &value.DS)
-			//addme := dns.DS{KeyTag: value.KeyTag, Algorithm: value.Algorithm, DigestType: value.DigestType, Digest: value.Digest}
-			//adds = append(adds, &addme)
 		}
-		log.Printf("value is a %T with value of %v", adds, adds)
+
 		removes := []dns.RR{}
 		for _, value := range dsremove {
 			removes = append(removes, value)
 		}
 		log.Printf("value is a %T with value of %v", removes, removes)
 
-		///*
-		//parent.UpdateDS()
 		// trying to get ddns to work
 		output := []string{}
 		args := []string{parent.ip + ":" + parent.port, "catch22.se.", parent.keyname}
 		log.Printf("%v", args)
-		//err := TestUpdateCmd(args, &output)
-		//if err != nil {
-		//fmt.Println(err)
-		//}
-		//fmt.Println(output)
 
-		// testing nsupdater_updater
+		// nsupdater_updater.go
 		updater := GetUpdater("nsupdate")
 		err := updater.Update(zone, parent.ip+":"+parent.port, &[][]dns.RR{adds}, &[][]dns.RR{removes}, &output)
-		//err := updater.Update(zone, parent.ip+":"+parent.port, nil, &[][]dns.RR{removes}, &output)
 		if err != nil {
 			fmt.Printf("bob Got an err %v\n", err)
 		}
-
 		fmt.Println(output)
-		//	*/
 	}
 
 	// if CDS's from children match

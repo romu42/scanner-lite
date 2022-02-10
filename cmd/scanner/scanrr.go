@@ -182,35 +182,6 @@ func CreateUpdate(zone string, parent *Parent) ([]*dns.CDS, []*dns.DS) {
 }
 
 /*
-func (parent *Parent) UpdateDS() {
-	addme := dns.DS{
-		KeyTag:     36584,
-		Algorithm:  13,
-		DigestType: 2,
-		Digest:     "00E8D1D92DB8516C753C71D326195ADDC483908DDF60C10D96992FAA07D9E09C",
-	}
-
-	m := new(dns.Msg)
-	c := new(dns.Client)
-
-	m.SetTsig(parent.keyname, parent.hmac, 300, time.Now().Unix())
-	c.TsigSecret = map[string]string{parent.keyname: parent.secret}
-	m.SetUpdate("msat1.catch22.se.")
-	log.Printf("%T -> %v \n", addme, addme)
-	//	m.Insert(addme)
-
-	/*
-			m.SetTsig(signer.Auth.TSIGName, signer.Auth.TSIGAlg, 300, time.Now().Unix())
-			c.TsigSecret = map[string]string{signer.Auth.TSIGName: signer.Auth.TSIGKey}
-			// log.Printf("DDNS: FetchRRset: TsigSecret: %v", c.TsigSecret)
-		} else {
-			log.Printf("PrepareTSIGExchange: accessing signer % without TSIG. This is a debugging mechanism only", signer.Name)
-		}
-		return nil
-*/
-//}
-
-/*
 Not Implemented:
 func GetCdnskey()
 
