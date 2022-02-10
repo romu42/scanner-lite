@@ -49,12 +49,12 @@ func (n *NsupdateUpdater) Update(fqdn, signer string, inserts, removes *[][]dns.
 		return fmt.Errorf("Inserts and removes empty, nothing to do")
 	}
 
-	ip := "13.48.238.90"
+	ip := "13.48.238.90:53"
 	if ip == "" {
 		return fmt.Errorf("No ip|host for signer %s", signer)
 	}
 
-	tsigkey := "musiclab.parent"
+	tsigkey := "musiclab.parent."
 	if tsigkey == "" {
 		return fmt.Errorf("Missing signer %s TSIG key %s", signer, tsigkey)
 	}
@@ -64,24 +64,30 @@ func (n *NsupdateUpdater) Update(fqdn, signer string, inserts, removes *[][]dns.
 		return fmt.Errorf("Missing TSIG key secret for %s", tsigkey)
 	}
 
+	fqdn = "catch22.se."
 	m := new(dns.Msg)
 	m.SetUpdate(fqdn)
 	if inserts != nil {
 		for _, insert := range *inserts {
 			m.Insert(insert)
+			log.Printf(" nsupdater inserts - %v\n", m)
 		}
 	}
 	if removes != nil {
 		for _, remove := range *removes {
+			log.Printf(" nsupdater removes - %v\n", remove)
 			m.Remove(remove)
+			log.Printf(" nsupdater removes - %v\n", m)
 		}
 	}
-	m.SetTsig(tsigkey+".", dns.HmacSHA256, 300, time.Now().Unix())
+	m.SetTsig(tsigkey, dns.HmacSHA256, 300, time.Now().Unix())
 
 	*output = append(*output, fmt.Sprintf("nsupdate: Sending inserts %d, removals %d to signer %s", inserts_len, removes_len, signer))
 
 	c := new(dns.Client)
-	c.TsigSecret = map[string]string{tsigkey + ".": secret}
+	//c.TsigSecret = map[string]string{tsigkey + ".": secret}
+	c.TsigSecret = map[string]string{tsigkey: secret}
+	log.Printf("nsupdater: secret is %v\n", c.TsigSecret)
 	in, rtt, err := c.Exchange(m, ip)
 	if err != nil {
 		return err

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/miekg/dns"
 )
@@ -182,6 +181,7 @@ func CreateUpdate(zone string, parent *Parent) ([]*dns.CDS, []*dns.DS) {
 
 }
 
+/*
 func (parent *Parent) UpdateDS() {
 	addme := dns.DS{
 		KeyTag:     36584,
@@ -207,8 +207,8 @@ func (parent *Parent) UpdateDS() {
 			log.Printf("PrepareTSIGExchange: accessing signer % without TSIG. This is a debugging mechanism only", signer.Name)
 		}
 		return nil
-	*/
-}
+*/
+//}
 
 /*
 Not Implemented:
