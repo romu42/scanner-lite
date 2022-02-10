@@ -1,5 +1,7 @@
 package main
 
+import "github.com/miekg/dns"
+
 // Parent Server info and child info according to Parent
 type Parent struct {
 	hostname string
@@ -9,7 +11,8 @@ type Parent struct {
 	keyname  string
 	secret   string
 	child_ns map[string]*Child
-	ds       []string
+	//ds       []string
+	ds []*dns.DS
 }
 
 // Authoritave Nameserver
@@ -18,7 +21,8 @@ type Child struct {
 	ip       string
 	port     string
 	nses     map[string]string
-	cds      []string
-	cdnskey  []string
-	csync    string
+	//cds      []string
+	cds []*dns.CDS
+	//cdnskey  []string //not implemented
+	csync string
 }

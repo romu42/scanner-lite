@@ -2,7 +2,10 @@ module github.com/romu42/scanner-lite
 
 go 1.17
 
-require github.com/miekg/dns v1.1.45
+require (
+	github.com/google/uuid v1.3.0
+	github.com/miekg/dns v1.1.45
+)
 
 require (
 	golang.org/x/mod v0.4.2 // indirect
