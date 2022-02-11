@@ -140,20 +140,51 @@ func GetCsync(zone string, hostname string, server string, port string) string {
 	}
 }
 
-func CreateUpdate(zone string, parent *Parent) ([]*dns.CDS, []*dns.DS) {
+//func CreateNsUpdate(zone string, parent *Parent) ([]*dns.NS, []*dns.NS) {
+func CreateNsUpdate(zone string, parent *Parent) {
+	// This logic needs discussion, I am shooting from the hip here
+
+	// Compare NS for all children
+	if len(parent.child_ns) > 1 {
+		for _, child := range parent.child_ns {
+			log.Printf("Checking Child NSES %+v", child.nses)
+		}
+	} else {
+		// Only one child just update parent if the Csync says so..
+		log.Printf("Only one child just update parent if the Csync says so..")
+		for _, child := range parent.child_ns {
+			log.Printf("Checking Child NSES %+v", child.nses)
+		}
+	}
+	/*
+		if match {
+			log.Printf("Matched NS at children update Parent\n")
+		} else {
+			log.Printf("UnMatched NS at children No update Parent\n")
+		}
+	*/
+	// If match
+	// Diff from parent
+	// If in child not in parent = add to parent
+	// If in parent not in child = remove from parent
+	// If not match at children report
+
+}
+
+func CreateDsUpdate(zone string, parent *Parent) ([]*dns.CDS, []*dns.DS) {
 	dsmap := make(map[string]*dns.DS)
 	cdsmap := make(map[string]*dns.CDS)
-	//cdsmap := make(map[string]*dns.DS)
 	var dsremove []*dns.DS
-	var dsadd []*dns.CDS // need to convert CDS to DS
-	//var dsadd []*dns.DS // need to convert CDS to DS
+	var dsadd []*dns.CDS // Gets converte to DS in main.go
 	log.Printf("DS update Code starts here\n")
+
 	// DSes
 	for _, ds := range parent.ds {
 		dsmap[fmt.Sprintf("%d %d %d %s", ds.KeyTag, ds.Algorithm,
 			ds.DigestType, ds.Digest)] = ds
 	}
 	log.Printf("%s -> DS = %v", parent.hostname, dsmap)
+
 	// CDSes
 	for _, child := range parent.child_ns {
 		for _, cds := range child.cds {
@@ -162,12 +193,14 @@ func CreateUpdate(zone string, parent *Parent) ([]*dns.CDS, []*dns.DS) {
 		}
 		log.Printf("%s -> CDS = %v", child.hostname, cdsmap)
 	}
+
 	// if in CDSmap but not in DSmap = add to DS-SET
 	for key, _ := range cdsmap {
 		if _, ok := dsmap[key]; !ok {
 			dsadd = append(dsadd, cdsmap[key])
 		}
 	}
+
 	// if in DSmap but not in CDSmap = Remove from DS-SET
 	for key, _ := range dsmap {
 		if _, ok := cdsmap[key]; !ok {
@@ -178,7 +211,6 @@ func CreateUpdate(zone string, parent *Parent) ([]*dns.CDS, []*dns.DS) {
 	log.Printf("Add to DS set %v", dsadd)
 	log.Printf("Remove from DS set %v", dsremove)
 	return dsadd, dsremove
-
 }
 
 /*

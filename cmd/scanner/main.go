@@ -60,15 +60,15 @@ func main() {
 				ip := GetIP(ns, child.ip, child.port)
 				log.Printf("IP from child: %s", ip)
 				child.nses[ns] = ""
-				log.Printf("NS from child: %s", ns)
 			}
+			log.Printf("NS from child: %v", nses)
 		}
 	}
 
-	// Get DS update information
+	// Update DS information
 	for zone, parent := range zones {
 		log.Printf("Zone %s\n", zone)
-		dsadd, dsremove := CreateUpdate(zone, parent)
+		dsadd, dsremove := CreateDsUpdate(zone, parent)
 		for _, value := range dsadd {
 			value.Hdr.Rrtype = 43
 		}
@@ -84,12 +84,9 @@ func main() {
 		}
 		log.Printf("value is a %T with value of %v", removes, removes)
 
-		// trying to get ddns to work
-		output := []string{}
-		args := []string{parent.ip + ":" + parent.port, "catch22.se.", parent.keyname}
-		log.Printf("%v", args)
+		// trying to get ddns to work with nsupdater_updater.go
 
-		// nsupdater_updater.go
+		output := []string{}
 		updater := GetUpdater("nsupdate")
 		err := updater.Update(zone, parent.ip+":"+parent.port, &[][]dns.RR{adds}, &[][]dns.RR{removes}, &output)
 		if err != nil {
@@ -98,16 +95,44 @@ func main() {
 		fmt.Println(output)
 	}
 
-	// if CDS's from children match
-	// - Update Parent if neccessary ( need to figure out the ttl bit )
-	// else
-	// - log error
+	// Update NS in parent
+	updateNsFlag := 0
 
-	// Get Csync from children
-	// if Csync from children match
-	//  - check intent update parent as necessary
-	// else
-	//  - log error
+	for zone, parent := range zones {
+		log.Printf("Zone: %s", zone)
+		flagCount := len(parent.child_ns)
+		for _, child := range parent.child_ns {
+			if child.csync == "" {
+				log.Printf("No Csync, not updating Parent with NSes")
+			} else {
+				updateNsFlag++
+			}
+		}
+		if updateNsFlag == flagCount {
+			log.Printf("Csync count even, updating Parent with NSes")
+			CreateNsUpdate(zone, parent)
+
+		} else {
+			log.Printf("Csync count uneven, no updating Parent with NSes")
+
+		}
+
+	}
+	//		nsAdd, nsRemove := CreateNsUpdate(zone, parent)
+	//		CreateNsUpdate(zone, parent)
+	//log.Printf("adds: %v\n removes: %v\n" nsAdd, nsRemove)
+
 }
+
+// if CDS's from children match
+// - Update Parent if neccessary ( need to figure out the ttl bit )
+// else
+// - log error
+
+// Get Csync from children
+// if Csync from children match
+//  - check intent update parent as necessary
+// else
+//  - log error
 
 // Ignore CDNSKEY for now

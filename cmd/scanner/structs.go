@@ -11,8 +11,7 @@ type Parent struct {
 	keyname  string
 	secret   string
 	child_ns map[string]*Child
-	//ds       []string
-	ds []*dns.DS
+	ds       []*dns.DS
 }
 
 // Authoritave Nameserver
@@ -21,8 +20,7 @@ type Child struct {
 	ip       string
 	port     string
 	nses     map[string]string
-	//cds      []string
-	cds []*dns.CDS
+	cds      []*dns.CDS
 	//cdnskey  []string //not implemented
 	csync string
 }
