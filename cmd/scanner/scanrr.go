@@ -131,6 +131,10 @@ func GetCsync(zone string, hostname string, server string, port string) string {
 		log.Printf("No CSYNC Received: %v\n", dns.RcodeToString[r.Rcode])
 		csync := ""
 		return csync
+	} else if len(r.Answer) == 0 {
+		log.Printf("No CSYNC RR\n")
+		csync := ""
+		return csync
 	} else {
 		// Only grabbing the first RR
 		answer := r.Answer[0].String()

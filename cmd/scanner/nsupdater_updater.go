@@ -50,7 +50,7 @@ func (n *NsupdateUpdater) Update(fqdn string, parent *Parent, inserts, removes *
 		return fmt.Errorf("Inserts and removes empty, nothing to do")
 	}
 
-	ip := parent.ip + "." + parent.port
+	ip := parent.ip + ":" + parent.port
 	if ip == "" {
 		return fmt.Errorf("No ip|host for signer %s", parent.hostname)
 	}
@@ -65,9 +65,9 @@ func (n *NsupdateUpdater) Update(fqdn string, parent *Parent, inserts, removes *
 		return fmt.Errorf("Missing TSIG key secret for %s", tsigkey)
 	}
 
-	fqdn = "catch22.se."
 	m := new(dns.Msg)
 	m.SetUpdate(fqdn)
+	log.Printf("%s\n", fqdn)
 	if inserts != nil {
 		for _, insert := range *inserts {
 			m.Insert(insert)

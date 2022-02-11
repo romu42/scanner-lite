@@ -30,7 +30,7 @@ func ReadConf() map[string]*Parent {
 		// ex: catc22.se.:msat1.catch22.se.:ns1.catch22.se.:13.48.238.90:53:hmac-sha256:musiclab.parent:4ytnbnbTtA+w19eZjK6bjw/VB9SH8q/5eQKvf9BlAf8=
 		parts := strings.Split(line, ":")
 		z := &Parent{
-			pzone:    parts[1],
+			pzone:    parts[0],
 			hostname: parts[2],
 			ip:       parts[3],
 			port:     parts[4],
