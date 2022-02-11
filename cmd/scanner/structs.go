@@ -4,6 +4,7 @@ import "github.com/miekg/dns"
 
 // Parent Server info and child info according to Parent
 type Parent struct {
+	pzone    string
 	hostname string
 	ip       string
 	port     string

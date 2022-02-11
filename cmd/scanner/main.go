@@ -88,7 +88,7 @@ func main() {
 
 		output := []string{}
 		updater := GetUpdater("nsupdate")
-		err := updater.Update(zone, parent.ip+":"+parent.port, &[][]dns.RR{adds}, &[][]dns.RR{removes}, &output)
+		err := updater.Update(parent.pzone, parent, &[][]dns.RR{adds}, &[][]dns.RR{removes}, &output)
 		if err != nil {
 			fmt.Printf("bob Got an err %v\n", err)
 		}
@@ -116,7 +116,7 @@ func main() {
 				fmt.Printf("Csync Update got err %v\n", err)
 			}
 			updater := GetUpdater("nsupdate")
-			err = updater.Update(zone, parent.ip+":"+parent.port, &[][]dns.RR{adds}, &[][]dns.RR{removes}, &output)
+			err = updater.Update(parent.pzone, parent, &[][]dns.RR{adds}, &[][]dns.RR{removes}, &output)
 			if err != nil {
 				fmt.Printf("bob Got an err %v\n", err)
 			}
@@ -127,9 +127,6 @@ func main() {
 		}
 		fmt.Println(output)
 	}
-	//		nsAdd, nsRemove := CreateNsUpdate(zone, parent)
-	//		CreateNsUpdate(zone, parent)
-	//log.Printf("adds: %v\n removes: %v\n" nsAdd, nsRemove)
 
 }
 

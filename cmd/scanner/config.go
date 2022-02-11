@@ -30,14 +30,15 @@ func ReadConf() map[string]*Parent {
 		// ex: msat1.catch22.se.:ns1.catch22.se.:13.48.238.90:53:hmac-sha256:musiclab.parent:4ytnbnbTtA+w19eZjK6bjw/VB9SH8q/5eQKvf9BlAf8=
 		parts := strings.Split(line, ":")
 		z := &Parent{
-			hostname: parts[1],
-			ip:       parts[2],
-			port:     parts[3],
-			hmac:     parts[4],
-			keyname:  parts[5],
-			secret:   parts[6],
+			pzone:    parts[1],
+			hostname: parts[2],
+			ip:       parts[3],
+			port:     parts[4],
+			hmac:     parts[5],
+			keyname:  parts[6],
+			secret:   parts[7],
 		}
-		zones[parts[0]] = z
+		zones[parts[1]] = z
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)

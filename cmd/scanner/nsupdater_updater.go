@@ -10,7 +10,8 @@ import (
 )
 
 type Updater interface {
-	Update(fqdn, signer string, inserts, removes *[][]dns.RR, output *[]string) error
+	//Update(fqdn, signer string, inserts, removes *[][]dns.RR, output *[]string) error
+	Update(fqdn string, parent *Parent, inserts, removes *[][]dns.RR, output *[]string) error
 	RemoveRRset(fqdn, signer string, rrsets [][]dns.RR, output *[]string) error
 }
 
@@ -32,7 +33,7 @@ func init() {
 }
 
 //func (n *NsupdateUpdater) Update(fqdn, signer string, inserts, removes *[][]dns.RR, output *[]string) error {
-func (n *NsupdateUpdater) Update(fqdn, signer string, inserts, removes *[][]dns.RR, output *[]string) error {
+func (n *NsupdateUpdater) Update(fqdn string, parent *Parent, inserts, removes *[][]dns.RR, output *[]string) error {
 	inserts_len := 0
 	removes_len := 0
 	if inserts != nil {
@@ -49,17 +50,17 @@ func (n *NsupdateUpdater) Update(fqdn, signer string, inserts, removes *[][]dns.
 		return fmt.Errorf("Inserts and removes empty, nothing to do")
 	}
 
-	ip := "13.48.238.90:53"
+	ip := parent.ip + "." + parent.port
 	if ip == "" {
-		return fmt.Errorf("No ip|host for signer %s", signer)
+		return fmt.Errorf("No ip|host for signer %s", parent.hostname)
 	}
 
-	tsigkey := "musiclab.parent."
+	tsigkey := parent.keyname
 	if tsigkey == "" {
-		return fmt.Errorf("Missing signer %s TSIG key %s", signer, tsigkey)
+		return fmt.Errorf("Missing signer %s TSIG key %s", parent.hostname, tsigkey)
 	}
 
-	secret := "KChJOq1qPJ9mHK5TRDPL9FuVwh4RoWPrTrBKpi1iLrI="
+	secret := parent.secret
 	if secret == "" {
 		return fmt.Errorf("Missing TSIG key secret for %s", tsigkey)
 	}
@@ -82,7 +83,7 @@ func (n *NsupdateUpdater) Update(fqdn, signer string, inserts, removes *[][]dns.
 	}
 	m.SetTsig(tsigkey, dns.HmacSHA256, 300, time.Now().Unix())
 
-	*output = append(*output, fmt.Sprintf("nsupdate: Sending inserts %d, removals %d to signer %s", inserts_len, removes_len, signer))
+	*output = append(*output, fmt.Sprintf("nsupdate: Sending inserts %d, removals %d to signer %s", inserts_len, removes_len, parent.hostname))
 
 	c := new(dns.Client)
 	//c.TsigSecret = map[string]string{tsigkey + ".": secret}
