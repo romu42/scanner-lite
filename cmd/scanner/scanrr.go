@@ -141,34 +141,59 @@ func GetCsync(zone string, hostname string, server string, port string) string {
 }
 
 //func CreateNsUpdate(zone string, parent *Parent) ([]*dns.NS, []*dns.NS) {
-func CreateNsUpdate(zone string, parent *Parent) {
+func CreateNsUpdate(zone string, parent *Parent) ([]dns.RR, []dns.RR, error) {
 	// This logic needs discussion, I am shooting from the hip here
+	cNsesmap := make(map[string]string)
+	pNsesmap := make(map[string]string)
+	//var nsAdd []string
+	var nsAdd []dns.RR
+	//var nsRemove []string
+	var nsRemove []dns.RR
 
-	// Compare NS for all children
-	if len(parent.child_ns) > 1 {
-		for _, child := range parent.child_ns {
-			log.Printf("Checking Child NSES %+v", child.nses)
-		}
-	} else {
-		// Only one child just update parent if the Csync says so..
-		log.Printf("Only one child just update parent if the Csync says so..")
-		for _, child := range parent.child_ns {
-			log.Printf("Checking Child NSES %+v", child.nses)
+	// Get a full map of "all" nses the children know about for comparison
+	for pkey, child := range parent.child_ns {
+		pNsesmap[pkey] = pkey
+		for ckey, cvalue := range child.nses {
+			cNsesmap[ckey] = cvalue
 		}
 	}
-	/*
-		if match {
-			log.Printf("Matched NS at children update Parent\n")
-		} else {
-			log.Printf("UnMatched NS at children No update Parent\n")
-		}
-	*/
-	// If match
-	// Diff from parent
-	// If in child not in parent = add to parent
-	// If in parent not in child = remove from parent
-	// If not match at children report
 
+	// Compare NS for all children
+	// If not match at children report
+	for _, child := range parent.child_ns {
+		for ckey, _ := range cNsesmap {
+			if _, ok := child.nses[ckey]; !ok {
+				return nil, nil, fmt.Errorf("children are not in sync send error, ns:%s is not in child:%s", ckey, child.hostname)
+			}
+		}
+	}
+
+	// Diff from parent
+	// If in child.nses not in parent.child_nses = add to parent
+	for key, _ := range cNsesmap {
+		if _, ok := pNsesmap[key]; !ok {
+			addme, err := dns.NewRR(fmt.Sprintf("%s 30 IN NS %s", zone, key))
+			if err != nil {
+				log.Printf("error: %v\n", err)
+			}
+			nsAdd = append(nsAdd, addme)
+		}
+	}
+
+	// If in parent.child_nses not in child = remove from parent
+	for key, _ := range pNsesmap {
+		if _, ok := cNsesmap[key]; !ok {
+			addme, err := dns.NewRR(fmt.Sprintf("%s 30 IN NS %s", zone, key))
+			if err != nil {
+				log.Printf("error: %v\n", err)
+			}
+			nsRemove = append(nsRemove, addme)
+		}
+	}
+
+	log.Printf("%T adds  -> %v", nsAdd, nsAdd)
+	log.Printf("%T removes  -> %v", nsRemove, nsRemove)
+	return nsAdd, nsRemove, nil
 }
 
 func CreateDsUpdate(zone string, parent *Parent) ([]*dns.CDS, []*dns.DS) {
@@ -185,7 +210,7 @@ func CreateDsUpdate(zone string, parent *Parent) ([]*dns.CDS, []*dns.DS) {
 	}
 	log.Printf("%s -> DS = %v", parent.hostname, dsmap)
 
-	// CDSes
+	// CDSes TODO: Possible bug that the childrens CDS records are not compared to each other.
 	for _, child := range parent.child_ns {
 		for _, cds := range child.cds {
 			cdsmap[fmt.Sprintf("%d %d %d %s", cds.KeyTag, cds.Algorithm,

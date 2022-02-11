@@ -99,6 +99,7 @@ func main() {
 	updateNsFlag := 0
 
 	for zone, parent := range zones {
+		output := []string{}
 		log.Printf("Zone: %s", zone)
 		flagCount := len(parent.child_ns)
 		for _, child := range parent.child_ns {
@@ -110,13 +111,21 @@ func main() {
 		}
 		if updateNsFlag == flagCount {
 			log.Printf("Csync count even, updating Parent with NSes")
-			CreateNsUpdate(zone, parent)
+			adds, removes, err := CreateNsUpdate(zone, parent)
+			if err != nil {
+				fmt.Printf("Csync Update got err %v\n", err)
+			}
+			updater := GetUpdater("nsupdate")
+			err = updater.Update(zone, parent.ip+":"+parent.port, &[][]dns.RR{adds}, &[][]dns.RR{removes}, &output)
+			if err != nil {
+				fmt.Printf("bob Got an err %v\n", err)
+			}
 
 		} else {
 			log.Printf("Csync count uneven, no updating Parent with NSes")
 
 		}
-
+		fmt.Println(output)
 	}
 	//		nsAdd, nsRemove := CreateNsUpdate(zone, parent)
 	//		CreateNsUpdate(zone, parent)
