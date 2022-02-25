@@ -1,2 +1,3 @@
 cmd/scanner/zones2scan.yml
+cmd/scanner/scanrr.go
 musiclab.parent.tsig
