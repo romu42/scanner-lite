@@ -48,7 +48,7 @@ func main() {
 			// Get CDS From Child
 			child.cds = GetCDS(zone, child.hostname, child.ip, child.port)
 			for _, cds := range child.cds {
-				log.Printf("%s", cds)
+				log.Printf("[CDS from child] %s", cds)
 			}
 			// Get CSYNC From Child
 			child.csync = GetCsync(zone, child.hostname, child.ip, child.port)

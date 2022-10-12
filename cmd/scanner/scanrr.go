@@ -230,10 +230,12 @@ func CreateDsUpdate(zone string, parent *Parent) ([]*dns.CDS, []*dns.DS) {
 		}
 	}
 
-	// if in DSmap but not in CDSmap = Remove from DS-SET
-	for key, _ := range dsmap {
-		if _, ok := cdsmap[key]; !ok {
-			dsremove = append(dsremove, dsmap[key])
+	// if CDSmap is not empty and if in DSmap but not in CDSmap = Remove from DS-SET
+	if len(cdsmap) != 0 {
+		for key, _ := range dsmap {
+			if _, ok := cdsmap[key]; !ok {
+				dsremove = append(dsremove, dsmap[key])
+			}
 		}
 	}
 
